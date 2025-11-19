@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EscolaAPI.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using EscolaAPI.Data;
-using EscolaAPI.Model;
-using EscolaAPI.Services;
 
 namespace EscolaAPI.Controllers
 {
@@ -11,114 +10,73 @@ namespace EscolaAPI.Controllers
     public class AlunosController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly CepService _cepService;
 
-        public AlunosController(AppDbContext context, CepService cepService)
+
+        public AlunosController(AppDbContext context)
         {
             _context = context;
-            _cepService = cepService;
         }
 
-        // POST: api/Alunos
-        [HttpPost]
-        public async Task<ActionResult<Aluno>> PostAluno([FromBody] Aluno aluno)
+        [HttpGet]
+        public async Task<IActionResult> GetAlunos()
         {
-            if (aluno == null) return BadRequest(new { mensagem = "Dados inválidos" });
+            var alunos = _context.Alunos.ToList();
+            if (alunos == null)
+            {
+                return NotFound("Nenhum aluno encontrado.");
+            }
+            return Ok(alunos);
+        }
 
-            // Não envie 'Id' no JSON; DB deverá gerar o Id
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetAluno(int id)
+        {
+            var aluno = _context.Alunos.FirstOrDefault(a => a.Id == id);
+            if (aluno is null)
+            {
+                return NotFound("Nenhum aluno com essa ID encontrada");
+            }
+            return Ok(aluno);
+        }
+
+        [HttpPost("{id:int}")]
+        public async Task<IActionResult> CreateAluno([FromBody] Model.Aluno aluno)
+        {
+            if (aluno is null)
+            {
+                return BadRequest("Dados inválidos.");
+            }
             _context.Alunos.Add(aluno);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction(nameof(GetAluno), new { id = aluno.Id }, aluno);
         }
 
-        // GET: api/Alunos
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetAlunos()
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateAluno(int id, [FromBody] Model.Aluno aluno)
         {
-            var alunos = await _context.Alunos.AsNoTracking().ToListAsync();
-            if (alunos == null || alunos.Count == 0) return NotFound("Nenhum aluno encontrado");
-
-            var resultado = new List<object>();
-
-            foreach (var aluno in alunos)
+            var alunoUpdate = _context.Alunos.FirstOrDefault(a => a.Id == id);
+            if (alunoUpdate is null)
             {
-                object? endereco = null;
-                if (!string.IsNullOrWhiteSpace(aluno.Cep))
-                {
-                    endereco = await _cepService.BuscarEnderecoPorCepAsync(aluno.Cep);
-                }
-
-                resultado.Add(new
-                {
-                    aluno.Id,
-                    aluno.Nome,
-                    aluno.Sobrenome,
-                    aluno.NomeResponsavel,
-                    aluno.SobrenomeResponsavel,
-                    aluno.Telefone,
-                    aluno.Email,
-                    aluno.Idade,
-                    aluno.Turma,
-                    aluno.Cep,
-                    Endereco = endereco // null se não encontrado
-                });
+                return NotFound("Aluno não encontrado.");
             }
-
-            return Ok(resultado);
-        }
-
-        // GET: api/Alunos/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<object>> GetAluno(int id)
-        {
-            var aluno = await _context.Alunos.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
-            if (aluno == null) return NotFound(new { mensagem = "Aluno não encontrado" });
-
-            object? endereco = null;
-            if (!string.IsNullOrWhiteSpace(aluno.Cep))
-                endereco = await _cepService.BuscarEnderecoPorCepAsync(aluno.Cep);
-
-            return Ok(new
-            {
-                aluno.Id,
-                aluno.Nome,
-                aluno.Sobrenome,
-                aluno.NomeResponsavel,
-                aluno.SobrenomeResponsavel,
-                aluno.Telefone,
-                aluno.Email,
-                aluno.Idade,
-                aluno.Turma,
-                aluno.Cep,
-                Endereco = endereco
-            });
-        }
-
-        // PUT and DELETE 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAluno(int id, Aluno aluno)
-        {
-            if (id != aluno.Id) return BadRequest(new { mensagem = "ID do aluno não corresponde" });
-
-            var existeAluno = await _context.Alunos.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
-            if (existeAluno == null) return NotFound(new { mensagem = "Aluno não encontrado" });
-
-            _context.Entry(aluno).State = EntityState.Modified;
+            _context.Entry(alunoUpdate).State = EntityState.Modified;
+            _context.Entry(alunoUpdate).CurrentValues.SetValues(aluno);
             await _context.SaveChangesAsync();
-            return Ok(new { mensagem = "Aluno atualizado com sucesso" });
+            return Ok(alunoUpdate);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteAluno(int id)
         {
-            var aluno = await _context.Alunos.FindAsync(id);
-            if (aluno == null) return NotFound(new { mensagem = "Aluno não encontrado" });
-
-            _context.Alunos.Remove(aluno);
+            var alunoDelete = _context.Alunos.FirstOrDefault(a => a.Id == id);
+            if (alunoDelete is null)
+            {
+                return NotFound("Aluno não encontrado.");
+            }
+            _context.Entry(alunoDelete).State = EntityState.Modified;
+            _context.Alunos.Remove(alunoDelete);
             await _context.SaveChangesAsync();
-
-            return Ok(new { mensagem = "Aluno excluído com sucesso", aluno });
+            return Ok(alunoDelete);
         }
     }
 }
