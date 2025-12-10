@@ -4,6 +4,7 @@ using EscolaAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EscolaAPI.DTO;
+using AutoMapper;
 
 namespace EscolaAPI.Controllers
 {
@@ -13,11 +14,13 @@ namespace EscolaAPI.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ViaCepServices _viaCepServices;
+        private readonly IMapper _mapper;
 
-        public AlunosController(AppDbContext context, ViaCepServices viaCepServices)
+        public AlunosController(AppDbContext context, ViaCepServices viaCepServices, IMapper mapper)
         {
             _context = context;
             _viaCepServices = viaCepServices;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -53,19 +56,8 @@ namespace EscolaAPI.Controllers
             var endereco = await _viaCepServices.GetEndereco(Dto.Cep!);
             if (endereco is null)
                 return BadRequest("CEP inválido ou não encontrado.");
-            var aluno = new Aluno
-            {
-                Nome = Dto.Nome,
-                Sobrenome = Dto.Sobrenome,
-                NomeResponsavel = Dto.NomeResponsavel,
-                SobrenomeResponsavel = Dto.SobrenomeResponsavel,
-                Telefone = Dto.Telefone,
-                Email = Dto.Email,
-                Idade = Dto.Idade,
-                Turma = Dto.Turma,
-                Cep = Dto.Cep,
-                Endereco = endereco
-            };
+
+           var aluno = _mapper.Map<Aluno>(Dto);
 
             await _context.Alunos.AddAsync(aluno);
             await _context.SaveChangesAsync();
@@ -74,7 +66,7 @@ namespace EscolaAPI.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateAluno(int id, [FromBody] EnderecoDTO aluno)
+        public async Task<IActionResult> UpdateAluno(int id, [FromBody] AlunoUpdateDTO dto)
         {
             var alunoUpdate = await _context.Alunos
                 .Include(a => a.Endereco)
@@ -83,16 +75,9 @@ namespace EscolaAPI.Controllers
             if (alunoUpdate is null)
                 return NotFound("Aluno não encontrado.");
 
-            alunoUpdate.Nome = aluno.Nome;
-            alunoUpdate.Sobrenome = aluno.Sobrenome;
-            alunoUpdate.NomeResponsavel = aluno.NomeResponsavel;
-            alunoUpdate.SobrenomeResponsavel = aluno.SobrenomeResponsavel;
-            alunoUpdate.Telefone = aluno.Telefone;
-            alunoUpdate.Email = aluno.Email;
-            alunoUpdate.Idade = aluno.Idade;
-            alunoUpdate.Turma = aluno.Turma;
+            _mapper.Map(dto, alunoUpdate);
 
-            var novoCep = new string(aluno.Cep.Where(char.IsDigit).ToArray());
+            var novoCep = new string(alunoUpdate.Cep.Where(char.IsDigit).ToArray());
 
             if (novoCep != alunoUpdate.Cep)
             {

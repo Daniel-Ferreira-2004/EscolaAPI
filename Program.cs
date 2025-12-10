@@ -10,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient<ViaCepServices>();
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Banco de dados
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
