@@ -4,6 +4,7 @@ using EscolaAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EscolaAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251205201856_populaCep")]
+    partial class populaCep
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,8 +35,7 @@ namespace EscolaAPI.Migrations
 
                     b.Property<string>("Cep")
                         .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("varchar(8)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -91,23 +93,28 @@ namespace EscolaAPI.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bairro")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Cep")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Localidade")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Logradouro")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Uf")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Enderecos");
+                    b.ToTable("Endereco");
                 });
 
             modelBuilder.Entity("EscolaAPI.Model.Aluno", b =>

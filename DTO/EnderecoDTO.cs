@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace EscolaAPI.Model
+namespace EscolaAPI.DTO
 {
-    public class Aluno
+    public class EnderecoDTO
     {
         [Key]
         public int Id { get; set; }
@@ -32,7 +31,5 @@ namespace EscolaAPI.Model
         [StringLength(8, MinimumLength = 8)]
         [RegularExpression(@"^\d{8}$", ErrorMessage = "O CEP deve conter somente 8 números.")]
         public string? Cep { get; set; } = null!;
-
-        public Endereco? Endereco { get; set; }
     }
 }

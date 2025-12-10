@@ -1,4 +1,5 @@
 ﻿using EscolaAPI.Data;
+using EscolaAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddHttpClient<ViaCepServices>();
 
 // Banco de dados
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

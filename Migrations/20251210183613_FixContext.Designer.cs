@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EscolaAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251112170137_AlterarCepParaString")]
-    partial class AlterarCepParaString
+    [Migration("20251210183613_FixContext")]
+    partial class FixContext
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,11 +35,15 @@ namespace EscolaAPI.Migrations
 
                     b.Property<string>("Cep")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(8)
+                        .HasColumnType("varchar(8)");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<int?>("EnderecoId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("Idade")
                         .IsRequired()
@@ -76,7 +80,46 @@ namespace EscolaAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EnderecoId");
+
                     b.ToTable("Alunos");
+                });
+
+            modelBuilder.Entity("EscolaAPI.Model.Endereco", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Bairro")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Cep")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Localidade")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Logradouro")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Uf")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Enderecos");
+                });
+
+            modelBuilder.Entity("EscolaAPI.Model.Aluno", b =>
+                {
+                    b.HasOne("EscolaAPI.Model.Endereco", "Endereco")
+                        .WithMany()
+                        .HasForeignKey("EnderecoId");
+
+                    b.Navigation("Endereco");
                 });
 #pragma warning restore 612, 618
         }
