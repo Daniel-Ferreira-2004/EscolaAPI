@@ -11,6 +11,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient<ViaCepServices>();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<GeminiServices>(client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+});
 
 // Banco de dados
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
